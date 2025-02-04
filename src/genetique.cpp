@@ -4,7 +4,8 @@ using namespace std;
 
 class Individu{
     public: 
-        maman()
+        Individu(const Individu& autre):villes(autre.villes),depart(autre.depart),
+        itineraire(autre.itineraire),adaptation(autre.adaptation){};
     private:
         vector<int> villes;
         int depart;
