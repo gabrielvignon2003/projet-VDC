@@ -23,24 +23,22 @@ class Population{
         vector<Individu> composition;
 };
 
-pair<Individu> hybridation(Individu& papa, Individu& maman){
+pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
     Individu enfant_pm(maman);
     Individu enfant_mp(maman);
     srand(time(0));
-    separation=rand()%enfant.itineraire.size()+1;
+    int separation=rand()%enfant_pm.itineraire.size()+1;
     int i=0;
-    while(i<l){
-        enfant_pm[i]=papa[i];
+    while(i<separation){
+        enfant_pm.itineraire[i]=papa.itineraire[i];
     }
-    int i=separation;
-    while(i<enfant.itineraire.size()){
-        enfant_mp[i]=papa[i];
+    i=separation;
+    while(i<enfant_pm.itineraire.size()){
+        enfant_mp.itineraire[i]=papa.itineraire[i];
         i++;
     }
 
-    pair<Individu> fratrie;
-    fratrie.first=enfant_pm;
-    fratrie.second=enfant_mp;
+    pair<Individu,Individu> fratrie(enfant_pm,enfant_mp);
 
     return fratrie;
     
