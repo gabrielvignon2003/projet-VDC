@@ -1,24 +1,28 @@
 #include <iostream>
 #include <cstdlib>
-#include <time>
+#include <ctime>
 #include <vector>
-#include <pair>
+#include <utility>
 using namespace std;
 
 class Individu{
-
-    private:
+    public:
         vector<int> villes;
         int depart;
         vector<int> itineraire;
         double adaptation;
-    public: 
+
+        //constructeur paramétrique
+        Individu(vector<int> villes_, int depart_, vector<int> itineraire_,double adaptation_):
+        villes(villes_),depart(depart_),itineraire(itineraire_),adaptation(adaptation_){};
+        
+        //constructeur par copie
         Individu(const Individu& autre):villes(autre.villes),depart(autre.depart),
         itineraire(autre.itineraire),adaptation(autre.adaptation){};
 };
 
 class Population{
-    private:
+    public:
         int taille;
         vector<Individu> composition;
 };
@@ -45,10 +49,12 @@ pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
     
 }
 
+
+
 Individu mutation(Individu parent){
-    std::srand(std::time(0));
-    int k = 1 + std::rand() % (itineraire.size()-2);
-    int l = 1 + std::rand() % (itineraire.size()-2);
+    srand(time(0));
+    int k = 1 + rand() % (parent.itineraire.size()-2);
+    int l = 1 + rand() % (parent.itineraire.size()-2);
     Individu enfant(parent);
     enfant.itineraire[l] = parent.itineraire[k];
     enfant.itineraire[l-1] = parent.itineraire[k+1];
@@ -60,3 +66,4 @@ Individu mutation(Individu parent){
 int main(){
     return 0;
 }
+ 
