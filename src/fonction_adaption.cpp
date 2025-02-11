@@ -6,7 +6,7 @@
 using namespace std;
 #include "genetique.cpp"
 
-double DistanceParcours(Individu I,vector<vector<double>> Matrice){
+double distance_parcours(Individu I,vector<vector<double>> Matrice){
     double dist = 0.;
     int n = I.itineraire.size();
     for(int i = 0; i < n-1;i++ ){
