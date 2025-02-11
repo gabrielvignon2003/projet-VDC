@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <utility>
+#include "fonction_adaption.cpp"
 using namespace std;
 
 class Individu{
@@ -61,6 +62,57 @@ Individu mutation(Individu parent){
     enfant.itineraire[k] = parent.itineraire[l];
     enfant.itineraire[k+1] = parent.itineraire[l-1];
     return enfant;
+}
+
+int distance_population(Population& P){
+
+    int S = 0;
+    auto it = reproducteurs.composition.begin();
+    while(it!=reproducteurs.composition.end()){
+        S+=distance_parcours(it);
+        it++;
+    }
+    return S;
+}
+
+// sélection par roulette
+Population selection_roulette(Population& P){
+    Population reproducteurs;
+    int S = 0;
+    auto it = reproducteurs.composition.begin();
+    while(it!=reproducteurs.composition.end()){
+        S+=distance_parcours(it);
+        it++;
+    }
+    int r = rand()%S;
+    int somme = 0;
+    while(somme<r){
+        int j = rand()%(reproducteurs.composition.size()-1);
+        somme+=distance_parcours(reproducteurs.composition[j]);
+    }
+
+}
+
+Individu adaptation_max(Population&P){
+    auto it=P.composition.begin();
+    Individu max=*it;
+    while(it!=P.end()){
+        if(distance_parcours(*it)<distance_parcours(*(it+1))){
+            max=*(it+1);
+        }
+        it++;
+    }
+    return max
+}
+
+// sélection par rang
+Population selection_rang(Population& P){
+    Population reproducteurs=P;
+    int S=distance_population(reproducteurs);
+    while(distance_population(reproducteurs)>S){
+        reproducteurs.pop(adaptation_max(P));
+    }
+    return reproducteurs;
 }
 
 int main(){
