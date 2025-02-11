@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <utility>
+#include <functional>
 using namespace std;
 
 class Individu{
