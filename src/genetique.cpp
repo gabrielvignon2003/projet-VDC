@@ -64,6 +64,37 @@ Individu mutation(Individu parent){
     return enfant;
 }
 
+
+Population Reproduction(Population parent,const std::function<Population(Population)>& func,int q){ //l'entier q correspond au nombre d'individu de la population parent que l'on souhaite conserver
+    Population enfant(parent);
+    pair<Individu,Individu> Ptemp(parent.composition[0],parent.composition[0]);
+    Population P2 = func(parent);
+    int n = parent.taille;
+    if(P2.taille <= n){
+        for(int i = 0 ; i<P2.taille ; i++){
+            enfant.composition[i]=P2.composition[i];
+        }
+        int i = P2.taille;
+        while(i <= n -2){
+            srand(time(0));
+            Ptemp = hybridation(P2.composition[rand()%P2.taille],P2.composition[rand()%P2.taille]);
+            enfant.composition[i]=Ptemp.first;
+            enfant.composition[i+1]=Ptemp.second;
+            i += 2;
+        }
+        while(i<n){
+            enfant.composition[i]=mutation(P2.composition[rand()%P2.taille]);
+            i++;
+        }
+    }
+    else{
+        cout<<"erreur 05"<<endl;
+    }
+    return enfant;
+}
+
+
+
 int main(){
     return 0;
 }
