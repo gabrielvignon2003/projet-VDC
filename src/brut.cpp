@@ -3,7 +3,8 @@
 #include <string>
 #include <sstream>
 #include <cmath>
-
+#include <vector>
+using namespace std;
 
 double distance(double i1, double j1, double i2, double j2){
     return sqrt((i1-i2)*(i1-i2)+(j1-j2)*(j1-j2));
@@ -16,21 +17,21 @@ int main() {
         return 1;
     }
     std::string mot;
-    std::vector<double> distance;
+    std::vector<double> dist;
     while (fichier >> mot) { // Lire mot par mot
         std::istringstream iss(mot);
         int nombre;
         if (iss >> nombre) {
             std::cout << "Nombre détecté : " << nombre << std::endl;
-            distance.push_back(iss);
+            dist.push_back(nombre);
         } else {
             std::cout << "Texte détecté : " << mot << std::endl;
         }
     }
     std::vector<std::vector<double>> Adj;
-    for (int i=0;distance.size()/3;i++){
+    for (int i=0;dist.size()/3;i++){
         std::vector<double> ligne;
-        for (int j=0;j<distance.size();j++){
+        for (int j=0;j<dist.size();j++){
             if (j%3==0){
                 ligne.push_back(distance(i+1,i+2,j+1,j+2));
             }
