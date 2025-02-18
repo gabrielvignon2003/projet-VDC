@@ -28,13 +28,24 @@ int main() {
         }
     }
     std::vector<std::vector<double>> Adj;
-    for (int i=0;i/distance.size();i++){
+    for (int i=0;distance.size()/3;i++){
         std::vector<double> ligne;
-        for (int i=0;i/distance.size();i++)
-        ligne.push_back()
+        for (int j=0;j<distance.size();j++){
+            if (j%3==0){
+                ligne.push_back(distance(i+1,i+2,j+1,j+2));
+            }
+        }
+        Adj.push_back(ligne);
 
     }
     std::cout << distance(1,1,2,3) << std::endl;
     fichier.close();
     return 0;
+}
+
+std::vector<double> resol(std::vector<std::vector<double>> Adj, int depart){
+    int dim=sqrt(Adj.size());
+    double min=0;
+    
+
 }
