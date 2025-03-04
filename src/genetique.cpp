@@ -75,45 +75,93 @@ int distance_population(Population& P){
     return S;
 }
 
-// sélection par roulette
-Population selection_roulette(Population& P){
-    Population reproducteurs;
-    int S = 0;
-    auto it = reproducteurs.composition.begin();
-    while(it!=reproducteurs.composition.end()){
-        S+=distance_parcours(it);
-        it++;
-    }
-    int r = rand()%S;
-    int somme = 0;
-    while(somme<r){
-        int j = rand()%(reproducteurs.composition.size()-1);
-        somme+=distance_parcours(reproducteurs.composition[j]);
-    }
 
-}
-
-Individu adaptation_max(Population&P){
-    auto it=P.composition.begin();
-    Individu max=*it;
-    while(it!=P.end()){
-        if(distance_parcours(*it)<distance_parcours(*(it+1))){
-            max=*(it+1);
+enum modes_selection_reproducteurs {ROULETTE, RANG, TOURNOI, EUGENISME};
+Population selection_reproducteurs(const Population& adultes, enum modes_selection_reproducteurs mode_choisi = ROULETTE){
+    if(mode_choisi == ROULETTE){
+        auto iterateur = adultes.composition.begin();
+        int S = 0;
+        Population reproducteurs;
+        while(iterateur != adultes.composition.end()){
+            S = S + (*iterateur).adaptation;
+            iterateur++;
         }
-        it++;
+        while(reproducteurs.composition.size()<adultes.composition.size()){
+            int r = rand() % S;
+            int somme_cumulee=0;
+            iterateur = adultes.composition.begin();
+            while(somme_cumulee<=r && iterateur != adultes.composition.end()){
+                somme_cumulee=somme_cumulee+(*iterateur).adaptation;
+                if(somme_cumulee>=r){
+                    break;
+                }
+                iterateur++;
+                
+            }
+            reproducteurs.composition.push_back(*iterateur);
+        }
+        return reproducteurs;
     }
-    return max
+    // Les trois autres modes de sélection des reproducteurs pourront être implémentés plus tard
+
 }
 
-// sélection par rang
-Population selection_rang(Population& P){
-    Population reproducteurs=P;
-    int S=distance_population(reproducteurs);
-    while(distance_population(reproducteurs)>S){
-        reproducteurs.pop(adaptation_max(P));
+Individu minorant_population(const Population& population_en_vrac){
+    auto iterateur = population_en_vrac.composition.begin();
+    Individu minorant = *iterateur;
+    while(iterateur != population_en_vrac.composition.end()){
+        if((*iterateur).adaptation<minorant.adaptation){
+            minorant = *iterateur;
+        }
+        iterateur++;
     }
-    return reproducteurs;
+    return minorant;()
 }
+
+
+Population classement_population(const Population& population_en_vrac){
+    Population temp(population_en_vrac);
+    Population population_classee;
+    int i=0;
+    while(i<population_en_vrac.composition.size()){
+        population_classee.composition.push_back(minorant_population(temp));
+        temp.composition.erase(minorant_population(temp));
+        i++;
+    }
+    
+}
+
+enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
+Population selection_population_finale(const Population& parents, const Population& enfants, enum modes_selection_pop_finale mode_choisi = ENFANTS_PRIORITAIRES, int nombre_parents_survivants=0){
+    Population nouvelle_generation;
+    Population parents_classee=classement_population(parents);
+    Population enfants_classee=classement_population(enfants);
+    if(mode_choisi == ENFANTS_PRIORITAIRES){
+        return enfants;
+    }
+    else if(mode_choisi == ELITISME){
+        int i=0;
+        while(i<nombre_parents_survivants){
+            nouvelle_generation.composition.push_back(parents_classee.composition[i]);
+            i++;
+        }
+        int j=0;
+        while(i+j<parents_classee.composition.size()){
+            nouvelle_generation.composition.push_back(enfants_classee.composition[j]);
+            j++;
+        }
+
+    }
+
+    // L'eugénisme pourra être implanté plus tard 
+}
+
+int main(){
+    return 0;
+}
+ 
+
+
 
 int main(){
     return 0;
