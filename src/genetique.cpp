@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <limits>
 using namespace std;
 
 class Individu{
@@ -27,6 +28,41 @@ class Population{
         int taille;
         vector<Individu> composition;
 };
+
+Individu generate_indiv(std::vector<std::vector<double>> Adj,int n){
+    int ville = 0;
+    int i = rand()%n;
+    vector<int> vide;
+    double inf = numeric_limits<double>;
+    Individu I(vide,0,vide,inf);
+    while(Adj[0][i] != 0 ){
+        i = rand()%n;
+    }
+    I.itineraire[0] = i;
+    vector<int> marque(n, 0);
+    marque[i] = 1;
+    vector<int> vec(n, 1);
+    int pos = i;
+    int j = rand()%n;
+    while(marque != vec){
+        while(Adj[pos][j] != 0 ){
+            j = rand()%n;
+        }    
+        marque[j]=1;
+        I.itineraire.push_back(j);
+        pos = j;
+        j = rand()%n;
+    }
+    return I;
+}
+
+Population generate_pop(int n){
+    Population P;
+    for(int i =0;i<n;i++){
+        P.composition[i] = generate_indiv();
+    }
+    return P
+}
 
 pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
     Individu enfant_pm(maman);
