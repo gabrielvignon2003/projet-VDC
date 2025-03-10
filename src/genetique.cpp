@@ -7,6 +7,18 @@
 
 using namespace std;
 
+/*
+HYPOTHESES DU MODELE : 
+- Seules figurent dans le modèle les villes par lesquelles on doit passer (pas de villes de passage)
+
+- Chaque ville ne doit être visitée qu'une fois (sauf le départ)
+--> Il faudra essayer d'enlever cette hypothèse pour gérer les graphes étoilés
+
+- Graphe complet, chaque ville est reliée à toutes les autres)
+--> Pour se dégager de cette hypothèse, mettre des distances très grandes pour les villes non connectées
+semble pertinent.
+*/
+
 
 //Individu = itinéraire
 class Individu{
@@ -15,7 +27,7 @@ class Individu{
         double adaptation; //adaptation = inverse de la distance de l'itinéraire
 
         //constructeur paramétrique
-        Individu(vector<int> villes_, int depart_, vector<int> itineraire_,double adaptation_=0):
+        Individu(vector<int> itineraire_,double adaptation_=0):
         itineraire(itineraire_),adaptation(adaptation_){};
 
         //constructeur par copie
@@ -23,7 +35,7 @@ class Individu{
         itineraire(autre.itineraire),adaptation(autre.adaptation){};
 
         //évaluation de l'itinéraire
-        void evaluer(vector<vector<double>> matrice_des_distances){
+        void evaluer(vector<vector<double>>& matrice_des_distances){
             adaptation = 1./distance_parcours(*this, matrice_des_distances);
         }
 
@@ -37,7 +49,8 @@ class Individu{
         }
 };
 
-double distance_parcours(Individu I,vector<vector<double>> matrice_des_distances){
+//Distance d'un itinéraire/parcours 
+double distance_parcours(Individu I,vector<vector<double>>& matrice_des_distances){
     double dist = 0.;
     int n = I.itineraire.size();
     for(int i = 0; i < n-1;i++ ){
@@ -50,8 +63,28 @@ double distance_parcours(Individu I,vector<vector<double>> matrice_des_distances
 // Population = ensemble d'itinéraires
 class Population{
     public:
-        int taille;
         vector<Individu> composition;
+
+        void initialiser(int taille_individu, int nombre_villes){
+            composition.clear();
+            // On crée un vecteur contenant toutes les villes par lesquelles on doit passer 
+            vector<int> annuaire_villes;
+            int i=0;
+            while(i<nombre_villes){
+                annuaire_villes.push_back(i);
+                i++;
+            }
+            int j=0;
+            while(j<taille_individu){
+                //On mélange notre annuaire aléatoirement
+                random_shuffle(annuaire_villes.begin(),annuaire_villes.end());
+                //On ajoute cette permutation aléatoire à la population
+                composition.push_back(Individu(annuaire_villes));
+                j++;
+            }
+        }
+
+
 };
 
 // hybridation = croisement de deux individus
