@@ -241,8 +241,8 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
 
 
 }
-
+/*
 int main(){
     return 0;
 }
- 
+ */
