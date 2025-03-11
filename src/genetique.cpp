@@ -36,10 +36,7 @@ class Individu{
         Individu(const Individu& autre):
         itineraire(autre.itineraire),adaptation(autre.adaptation){};
 
-        //évaluation de l'itinéraire
-        void evaluer(vector<vector<double>>& matrice_des_distances){
-            adaptation = 1./distance_parcours(*this, matrice_des_distances);
-        }
+        void Individu::evaluer(vector<vector<double>>&);
 
         //affichage de l'itinéraire
         void afficher(){
@@ -61,6 +58,12 @@ double distance_parcours(Individu I,vector<vector<double>>& matrice_des_distance
     }
     return dist;
 }
+
+//Evaluation de l'itinéraire
+void Individu::evaluer(vector<vector<double>>& matrice_des_distances){
+    (*this).adaptation = 1./distance_parcours(*this, matrice_des_distances);
+}
+
 
 
 // Population = ensemble d'itinéraires
@@ -89,10 +92,9 @@ class Population{
         }
 
         void evaluer(vector<vector<double>>& matrice_des_distances){
-            int somme;
             auto it = (*this).composition.begin();
             while(it != (*this).composition.end()){
-                somme = somme + (*it).adaptation;
+                (*it).evaluer(matrice_des_distances);
             }
         }
 
@@ -117,27 +119,50 @@ class Population{
 
 };
 
+
+// Les opérateurs génétiques doivent proposer des chemins valides
+// Donc chaque ville ne doit apparaître qu'une fois
+
 // hybridation = croisement de deux composition
-pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
-    Individu enfant_pm(maman);
-    Individu enfant_mp(maman);
-    srand(time(0));
-    int separation=rand()%enfant_pm.itineraire.size()+1;
-    int i=0;
-    while(i<separation){
-        enfant_pm.itineraire[i]=papa.itineraire[i];
-    }
-    i=separation;
-    while(i<enfant_pm.itineraire.size()){
-        enfant_mp.itineraire[i]=papa.itineraire[i];
-        i++;
-    }
-
-    pair<Individu,Individu> fratrie(enfant_pm,enfant_mp);
-
-    return fratrie;
+pair<Individu, Individu> hybridation_OX(const Individu& papa, const Individu& maman) {
+    vector<int> enfant1(papa.itineraire.size(), -1);
+    vector<int> enfant2(maman.itineraire.size(), -1);
     
+    // Génération des points de coupure aléatoires
+    int taille = papa.itineraire.size();
+    int start = rand() % taille;
+    int end = start + rand() % (taille - start);
     
+    // Copie du segment central des parents aux enfants
+    unordered_set<int> genes_enfant1;
+    unordered_set<int> genes_enfant2;
+    
+    for(int i = start; i <= end; i++) {
+        enfant1[i] = papa.itineraire[i];
+        enfant2[i] = maman.itineraire[i];
+        genes_enfant1.insert(papa.itineraire[i]);
+        genes_enfant2.insert(maman.itineraire[i]);
+    }
+    
+    // Remplissage des parties restantes
+    auto remplir_enfant = [](const vector<int>& parent, vector<int>& enfant, 
+                            unordered_set<int>& genes, int start, int end) {
+        int ptr = 0;
+        for(int ville : parent) {
+            if(genes.find(ville) == genes.end()) {
+                while(ptr >= start && ptr <= end) ptr++;
+                if(ptr >= enfant.size()) break;
+                enfant[ptr] = ville;
+                ptr++;
+            }
+        }
+    };
+    
+    // Création des deux enfants
+    remplir_enfant(maman.itineraire, enfant1, genes_enfant1, start, end);
+    remplir_enfant(papa.itineraire, enfant2, genes_enfant2, start, end);
+    
+    return {Individu(enfant1), Individu(enfant2)};
 }
 
 
@@ -213,9 +238,12 @@ Population selection_population_finale(const Population& parents, const Populati
     return nouvelle_generation;
 }
 
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes, int frequence_mutation=1/10){
+
+// Génération d'une matrice des distances à partir d'un input à faire
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, int frequence_mutation=0.1){
     Population P;
     P.initialiser(taille_population,nombre_villes);
+    P.evaluer(matrice_des_distances);
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P);
@@ -223,9 +251,9 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
         
         Population enfants;
         while (enfants.composition.size() < taille_population) {
-            Individu parent1 = parents.composition[rand() % parents.composition.size()];
-            Individu parent2 = parents.composition[rand() % parents.composition.size()];
-            auto [enfant1, enfant2] = hybridation(parent1, parent2);
+            Individu papa = parents.composition[rand() % parents.composition.size()];
+            Individu maman = parents.composition[rand() % parents.composition.size()];
+            auto [enfant1, enfant2] = hybridation(papa, maman);
             enfants.composition.push_back(enfant1);
             enfants.composition.push_back(enfant2);
         }
@@ -237,8 +265,9 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
         }
 
         P=selection_population_finale(parents,enfants);
+        P.evaluer(matrice_des_distances);
     }
-
+// Critère d'arrêt : après 10 générations, pas d'évolution du coût
 
 }
 /*
