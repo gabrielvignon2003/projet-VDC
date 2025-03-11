@@ -116,6 +116,10 @@ class Population{
 
 };
 
+
+// Les opérateurs génétiques doivent proposer des chemins valides
+// Donc chaque ville ne doit apparaître qu'une fois
+
 // hybridation = croisement de deux composition
 pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
     Individu enfant_pm(maman);
@@ -212,7 +216,9 @@ Population selection_population_finale(const Population& parents, const Populati
     return nouvelle_generation;
 }
 
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, int frequence_mutation=1/10){
+
+// Génération d'une matrice des distances à partir d'un input à faire
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, int frequence_mutation=0.1){
     Population P;
     P.initialiser(taille_population,nombre_villes);
     P.evaluer(matrice_des_distances);
