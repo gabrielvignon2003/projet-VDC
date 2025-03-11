@@ -12,8 +12,8 @@ double distance(double i1, double j1, double i2, double j2) {
     return sqrt((i1 - i2) * (i1 - i2) + (j1 - j2) * (j1 - j2));
 }
 
-vector<vector<double>> input() {
-    std::ifstream fichier("input.txt");
+vector<vector<double>> input(string fichier_texte) {
+    std::ifstream fichier(fichier_texte);
     if (!fichier) {
         std::cerr << "Erreur lors de l'ouverture du fichier !" << std::endl;
         return {};
@@ -93,6 +93,7 @@ void tspBrut(const vector<vector<double>>& distances) {
     cout << "Coût total: " << minCout << endl;
 }
 
+/*
 int main() {
     // Lire les coordonnées des villes à partir du fichier
     vector<vector<double>> distances = input();
@@ -105,3 +106,4 @@ int main() {
 
     return 0;
 }
+    */
