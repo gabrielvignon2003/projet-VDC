@@ -3,6 +3,7 @@
 #include <ctime>
 #include <vector>
 #include <utility>
+#include <random>
 #include <algorithm>
 
 using namespace std;
@@ -36,7 +37,7 @@ class Individu{
         Individu(const Individu& autre):
         itineraire(autre.itineraire),adaptation(autre.adaptation){};
 
-        void Individu::evaluer(vector<vector<double>>&);
+        void evaluer(vector<vector<double>>&);
 
         //affichage de l'itinéraire
         void afficher(){
@@ -107,7 +108,7 @@ class Population{
 
         // trier en fonction de l'adaptation (tri décroissant)
 
-        bool comparateur_selon_adaptation(Individu a, Individu b){
+        static bool comparateur_selon_adaptation(Individu a, Individu b){
             return a.adaptation>b.adaptation;
         }
 
@@ -124,58 +125,62 @@ class Population{
 // Donc chaque ville ne doit apparaître qu'une fois
 
 // hybridation = croisement de deux composition
-pair<Individu, Individu> hybridation_OX(const Individu& papa, const Individu& maman) {
-    vector<int> enfant1(papa.itineraire.size(), -1);
-    vector<int> enfant2(maman.itineraire.size(), -1);
-    
-    // Génération des points de coupure aléatoires
-    int taille = papa.itineraire.size();
-    int start = rand() % taille;
-    int end = start + rand() % (taille - start);
-    
-    // Copie du segment central des parents aux enfants
-    unordered_set<int> genes_enfant1;
-    unordered_set<int> genes_enfant2;
-    
-    for(int i = start; i <= end; i++) {
-        enfant1[i] = papa.itineraire[i];
-        enfant2[i] = maman.itineraire[i];
-        genes_enfant1.insert(papa.itineraire[i]);
-        genes_enfant2.insert(maman.itineraire[i]);
+pair<Individu, Individu> hybridation(const Individu& maman, const Individu& papa) {
+    int size = maman.itineraire.size();
+    //Initialise les enfants en mettant des -1 partout
+    vector<int> itineraire_enfant1(size, -1);
+    vector <int> itineraire_enfant2(size, -1);
+    Individu enfant1(itineraire_enfant1,0);
+    Individu enfant2(itineraire_enfant2,0);
+
+    // Génération d’un point de coupure aléatoire
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> dist(1, size - 2); // Assurer qu’il y a bien une partie après le point
+    int cut = dist(gen);
+
+    // Copier la première partie des parents vers les enfants
+    for (int i = 0; i <= cut; i++) {
+        enfant1.itineraire[i] = maman.itineraire[i];
+        enfant2.itineraire[i] = papa.itineraire[i];
     }
-    
-    // Remplissage des parties restantes
-    auto remplir_enfant = [](const vector<int>& parent, vector<int>& enfant, 
-                            unordered_set<int>& genes, int start, int end) {
-        int ptr = 0;
-        for(int ville : parent) {
-            if(genes.find(ville) == genes.end()) {
-                while(ptr >= start && ptr <= end) ptr++;
-                if(ptr >= enfant.size()) break;
-                enfant[ptr] = ville;
-                ptr++;
-            }
+
+    // Remplir le reste avec les éléments non encore utilisés
+    int index1 = cut + 1;
+    int index2 = cut + 1;
+    for (int i = 0; i < size; i++) {
+        int gene2 = papa.itineraire[i];
+        int gene1 = maman.itineraire[i];
+
+        if (find(enfant1.itineraire.begin(), enfant1.itineraire.end(), gene2) == enfant1.itineraire.end()) {
+            enfant1.itineraire[index1++] = gene2;
         }
-    };
-    
-    // Création des deux enfants
-    remplir_enfant(maman.itineraire, enfant1, genes_enfant1, start, end);
-    remplir_enfant(papa.itineraire, enfant2, genes_enfant2, start, end);
-    
-    return {Individu(enfant1), Individu(enfant2)};
+        if (find(enfant2.itineraire.begin(), enfant2.itineraire.end(), gene1) == enfant2.itineraire.end()) {
+            enfant2.itineraire[index2++] = gene1;
+        }
+    }
+
+    return {enfant1, enfant2};
 }
 
-
 // mutation d'un individu
-Individu mutation(Individu parent){
-    srand(time(0));
-    int k = 1 + rand() % (parent.itineraire.size()-2);
-    int l = 1 + rand() % (parent.itineraire.size()-2);
-    Individu enfant(parent);
-    enfant.itineraire[l] = parent.itineraire[k];
-    enfant.itineraire[l-1] = parent.itineraire[k+1];
-    enfant.itineraire[k] = parent.itineraire[l];
-    enfant.itineraire[k+1] = parent.itineraire[l-1];
+Individu mutation(Individu parent) {
+    static random_device rd; // Générateur aléatoire (mieux que rand)
+    static mt19937 gen(rd());
+
+    int size = parent.itineraire.size();
+    uniform_int_distribution<int> dist(1, size - 2); // Éviter les extrémités
+
+    int k = dist(gen);
+    int l = dist(gen);
+
+    while (k == l) { // S'assurer que k et l sont différents
+        l = dist(gen);
+    }
+
+    Individu enfant = parent;
+    swap(enfant.itineraire[k], enfant.itineraire[l]); // Échange des deux villes
+
     return enfant;
 }
 
@@ -251,9 +256,9 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
         
         Population enfants;
         while (enfants.composition.size() < taille_population) {
-            Individu papa = parents.composition[rand() % parents.composition.size()];
             Individu maman = parents.composition[rand() % parents.composition.size()];
-            auto [enfant1, enfant2] = hybridation(papa, maman);
+            Individu papa = parents.composition[rand() % parents.composition.size()];
+            auto [enfant1, enfant2] = hybridation(maman, papa);
             enfants.composition.push_back(enfant1);
             enfants.composition.push_back(enfant2);
         }
