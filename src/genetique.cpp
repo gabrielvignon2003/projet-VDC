@@ -9,14 +9,16 @@ using namespace std;
 
 /*
 HYPOTHESES DU MODELE : 
-- Seules figurent dans le modèle les villes par lesquelles on doit passer (pas de villes de passage)
+- Seules figurent dans le modèle les villes par lesquelles on doit passer (pas de villes de passage
+non obligatoires)
 
-- Chaque ville ne doit être visitée qu'une fois (sauf le départ)
+
+- Chaque ville ne doit être visitée qu'une fois (sauf le départ auquel il faut revenir)
 --> Il faudra essayer d'enlever cette hypothèse pour gérer les graphes étoilés
 
 - Graphe complet, chaque ville est reliée à toutes les autres)
---> Pour se dégager de cette hypothèse, mettre des distances très grandes pour les villes non connectées
-semble pertinent.
+--> Pour se dégager facilement de cette hypothèse, mettre des distances très grandes pour les 
+villes non connectées semble pertinent.
 */
 
 
@@ -46,6 +48,7 @@ class Individu{
                 cout << *it << "-->";
                 it++;
             }
+            cout << endl << (*this).adaptation << endl;
         }
 };
 
@@ -64,8 +67,9 @@ double distance_parcours(Individu I,vector<vector<double>>& matrice_des_distance
 class Population{
     public:
         vector<Individu> composition;
+        double somme_adaptations; 
 
-        void initialiser(int taille_individu, int nombre_villes){
+        void initialiser(int taille_population, int nombre_villes){
             composition.clear();
             // On crée un vecteur contenant toutes les villes par lesquelles on doit passer 
             vector<int> annuaire_villes;
@@ -75,7 +79,7 @@ class Population{
                 i++;
             }
             int j=0;
-            while(j<taille_individu){
+            while(j<taille_population){
                 //On mélange notre annuaire aléatoirement
                 random_shuffle(annuaire_villes.begin(),annuaire_villes.end());
                 //On ajoute cette permutation aléatoire à la population
@@ -84,10 +88,36 @@ class Population{
             }
         }
 
+        void evaluer(vector<vector<double>>& matrice_des_distances){
+            int somme;
+            auto it = (*this).composition.begin();
+            while(it != (*this).composition.end()){
+                somme = somme + (*it).adaptation;
+            }
+        }
+
+        void afficher(){
+            auto it = (*this).composition.begin();
+            while(it != (*this).composition.end()){
+                (*it).afficher();
+            }
+        }
+
+        // trier en fonction de l'adaptation (tri décroissant)
+
+        bool comparateur_selon_adaptation(Individu a, Individu b){
+            return a.adaptation>b.adaptation;
+        }
+
+        void trier(){
+            sort((*this).composition.begin(),(*this).composition.end(),comparateur_selon_adaptation);
+        }
+        
+
 
 };
 
-// hybridation = croisement de deux individus
+// hybridation = croisement de deux composition
 pair<Individu,Individu> hybridation(Individu& papa, Individu& maman){
     Individu enfant_pm(maman);
     Individu enfant_mp(maman);
@@ -124,20 +154,7 @@ Individu mutation(Individu parent){
     return enfant;
 }
 
-
-
-int distance_population(Population& P, vector<vector<double>> matrice_des_distances){
-
-    int S = 0;
-    auto it = P.composition.begin();
-    while(it!=P.composition.end()){
-        S+=distance_parcours(*it, matrice_des_distances);
-        it++;
-    }
-    return S;
-}
-
-
+// sélection des reproducteurs
 enum modes_selection_reproducteurs {ROULETTE, RANG, TOURNOI, EUGENISME};
 Population selection_reproducteurs(const Population& adultes, enum modes_selection_reproducteurs mode_choisi = ROULETTE){
     Population reproducteurs;
@@ -167,30 +184,12 @@ Population selection_reproducteurs(const Population& adultes, enum modes_selecti
     return reproducteurs;
 }
 
-vector<Individu>::iterator minorant_population(std::vector<Individu>& composition){
-    return std::min_element(composition.begin(), composition.end(),
-                            [](const Individu& a, const Individu& b) {
-                                return a.adaptation < b.adaptation;
-                            });
-}
-
-Population classement_population(const Population& population_en_vrac) {
-    Population temp(population_en_vrac);
-    Population population_classee;
-
-    while (!temp.composition.empty()) {
-        auto iterateur_minorant = minorant_population(temp.composition);
-        population_classee.composition.push_back(*iterateur_minorant);
-        temp.composition.erase(iterateur_minorant);
-    }
-
-    return population_classee;
-}
+//sélection des composition qui vont survivre 
 enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
 Population selection_population_finale(const Population& parents, const Population& enfants, enum modes_selection_pop_finale mode_choisi = ENFANTS_PRIORITAIRES, int nombre_parents_survivants=0){
     Population nouvelle_generation;
-    Population parents_classee=classement_population(parents);
-    Population enfants_classee=classement_population(enfants);
+    Population parents_classee=parents.trier();
+    Population enfants_classee=enfants.trier();
     if(mode_choisi == ENFANTS_PRIORITAIRES){
         return enfants;
     }
@@ -210,6 +209,35 @@ Population selection_population_finale(const Population& parents, const Populati
 
     // L'eugénisme pourra être implanté plus tard 
     return nouvelle_generation;
+}
+
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes, int frequence_mutation=1/10){
+    Population P;
+    P.initialiser(taille_population,nombre_villes);
+    int i = 0;
+    while(i<max_generation){
+        Population parents = selection_reproducteurs(P);
+
+        
+        Population enfants;
+        while (enfants.composition.size() < taille_population) {
+            Individu parent1 = parents.composition[rand() % parents.composition.size()];
+            Individu parent2 = parents.composition[rand() % parents.composition.size()];
+            auto [enfant1, enfant2] = hybridation(parent1, parent2);
+            enfants.composition.push_back(enfant1);
+            enfants.composition.push_back(enfant2);
+        }
+
+        int i=0;
+        while(i < enfants.composition.size() * frequence_mutation){
+            int index = rand() % enfants.composition.size();
+            enfants.composition[index] = mutation(enfants.composition[index]);
+        }
+
+        P=selection_population_finale(parents,enfants);
+    }
+
+
 }
 
 int main(){
