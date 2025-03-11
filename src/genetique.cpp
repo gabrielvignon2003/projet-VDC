@@ -188,8 +188,10 @@ Population selection_reproducteurs(const Population& adultes, enum modes_selecti
 enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
 Population selection_population_finale(const Population& parents, const Population& enfants, enum modes_selection_pop_finale mode_choisi = ENFANTS_PRIORITAIRES, int nombre_parents_survivants=0){
     Population nouvelle_generation;
-    Population parents_classee=parents.trier();
-    Population enfants_classee=enfants.trier();
+    Population parents_classee=parents;
+    parents_classee.trier();
+    Population enfants_classee=enfants;
+    enfants_classee.trier();
     if(mode_choisi == ENFANTS_PRIORITAIRES){
         return enfants;
     }
