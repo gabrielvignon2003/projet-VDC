@@ -89,10 +89,9 @@ class Population{
         }
 
         void evaluer(vector<vector<double>>& matrice_des_distances){
-            int somme;
             auto it = (*this).composition.begin();
             while(it != (*this).composition.end()){
-                somme = somme + (*it).adaptation;
+                (*it).evaluer(matrice_des_distances);
             }
         }
 
@@ -213,9 +212,10 @@ Population selection_population_finale(const Population& parents, const Populati
     return nouvelle_generation;
 }
 
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes, int frequence_mutation=1/10){
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, int frequence_mutation=1/10){
     Population P;
     P.initialiser(taille_population,nombre_villes);
+    P.evaluer(matrice_des_distances);
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P);
@@ -237,6 +237,7 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
         }
 
         P=selection_population_finale(parents,enfants);
+        P.evaluer(matrice_des_distances);
     }
 
 
