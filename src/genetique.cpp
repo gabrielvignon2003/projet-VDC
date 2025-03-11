@@ -275,8 +275,8 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
 // Critère d'arrêt : après 10 générations, pas d'évolution du coût
 
 }
-
-// int main(){
-//     return 0;
-// }
- 
+/*
+int main(){
+    return 0;
+}
+ */
