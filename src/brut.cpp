@@ -38,6 +38,7 @@ void tspBrut(vector<vector<double>>& distances) {
 int main() {
     // Lire les coordonnées des villes à partir du fichier
     vector<vector<double>> distances = input_coordonnees();
+    vector<vector<double>> distances = input_coordonnees();
     if (distances.empty()) {
         return 1; // Si les distances sont vides, quitter le programme
     }

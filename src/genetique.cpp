@@ -103,16 +103,18 @@ Population selection_reproducteurs(const Population& adultes, enum modes_selecti
     Population reproducteurs;
     if(mode_choisi == ROULETTE){
         auto iterateur = adultes.composition.begin();
-        int S = 0;
+        double S = 0;
         while(iterateur != adultes.composition.end()){
             S = S + (*iterateur).adaptation;
             iterateur++;
+            cout<<S<<endl;
         }
         while(reproducteurs.composition.size()<adultes.composition.size()){
-            int r = rand() % S;
+            srand(time(0));
+            int r = rand()%(int)S;
             int somme_cumulee=0;
             iterateur = adultes.composition.begin();
-            while(somme_cumulee<=r && iterateur != adultes.composition.end()){
+            while(iterateur != adultes.composition.end()){
                 somme_cumulee=somme_cumulee+(*iterateur).adaptation;
                 if(somme_cumulee>=r){
                     break;
@@ -165,7 +167,7 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P);
-
+        cout<<i<<endl;
         
         Population enfants;
         while (enfants.composition.size() < taille_population) {
@@ -176,8 +178,8 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
             enfants.composition.push_back(enfant2);
         }
 
-        int i=0;
-        while(i < enfants.composition.size() * frequence_mutation){
+        int j=0;
+        while(j < enfants.composition.size() * frequence_mutation){
             int index = rand() % enfants.composition.size();
             enfants.composition[index] = mutation(enfants.composition[index]);
         }
