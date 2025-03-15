@@ -27,28 +27,29 @@ directement avoir un input.txt correspondant à la matrice des distances
 
 
 vector<vector<double>> input_coordonnees(string nom_fichier) {
-    std::ifstream fichier(nom_fichier);
+    ifstream fichier(nom_fichier);
     if (!fichier) {
-        std::cerr << "Erreur lors de l'ouverture du fichier !" << std::endl;
+        cerr << "Erreur lors de l'ouverture du fichier !" << endl;
         return {};
     }
     
-    std::string mot;
-    std::vector<double> coordonnees;
+    string mot;
+    vector<double> coordonnees;
     while (fichier >> mot) { // Lire mot par mot
-        std::istringstream iss(mot);
+        istringstream iss(mot);
         double nombre;
         if (iss >> nombre) {
-            std::cout << "Nombre détecté : " << nombre << std::endl;
+            //cout << "Nombre détecté : " << nombre << endl;
             coordonnees.push_back(nombre);
-        } else {
-            std::cout << "Texte détecté : " << mot << std::endl;
-        }
+        } 
+        // else {
+        //     cout << "Texte détecté : " << mot << endl;
+        // }
     }
     
     vector<vector<double>> Adj;
     for (int i = 0; i < coordonnees.size(); i += 2) {
-        std::vector<double> ligne;
+        vector<double> ligne;
         for (int j = 0; j < coordonnees.size(); j += 2) {
             if (j % 2 == 0) {
                 ligne.push_back(distance(coordonnees[i], coordonnees[i+1], coordonnees[j], coordonnees[j+1]));
@@ -58,37 +59,37 @@ vector<vector<double>> input_coordonnees(string nom_fichier) {
     }
     
     // Affichage de la matrice des distances
-    for (int i = 0; i < Adj.size(); i++) {
-        for (int j = 0; j < Adj[i].size(); j++) {
-            cout << "[" << Adj[i][j] << "]";
-        }
-        cout << endl;
-    }
+    // for (int i = 0; i < Adj.size(); i++) {
+    //     for (int j = 0; j < Adj[i].size(); j++) {
+    //         cout << "[" << Adj[i][j] << "]";
+    //     }
+    //     cout << endl;
+    // }
     fichier.close();
     return Adj;
 }
 
 vector<vector<double>> input_distances(string nom_fichier) {
-    std::ifstream fichier(nom_fichier);
+    ifstream fichier(nom_fichier);
     if (!fichier) {
-        std::cerr << "Erreur lors de l'ouverture du fichier !" << std::endl;
+        cerr << "Erreur lors de l'ouverture du fichier !" << endl;
         return {};
     }
 
     vector<vector<double>> distances;
-    std::string mot;
+    string mot;
     
     // Lire chaque ligne du fichier
     while (getline(fichier, mot)) {
-        std::istringstream iss(mot);
-        std::vector<double> ligne;
+        istringstream iss(mot);
+        vector<double> ligne;
         
         // Lire chaque valeur sur la ligne
         while (iss >> mot) {
             // Chaque "mot" devrait être de la forme "distance" ou une valeur numérique
-            if (mot.find("distance") == std::string::npos) {
+            if (mot.find("distance") == string::npos) {
                 // Convertir la distance en nombre et l'ajouter à la ligne
-                double distance_val = std::stod(mot); 
+                double distance_val = stod(mot); 
                 ligne.push_back(distance_val);
             }
         }

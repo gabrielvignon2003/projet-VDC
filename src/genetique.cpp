@@ -23,7 +23,9 @@ double distance_parcours(Individu I, const vector<vector<double>>& matrice_des_d
     double dist = 0.;
     int n = I.itineraire.size();
     for(int i = 0; i < n-1;i++ ){
-        dist += matrice_des_distances[I.itineraire[i]][I.itineraire[i+1]];
+        // Le %n permet de boucler et de revenir à la ville de départ
+        int j=(i+1)%n;
+        dist += matrice_des_distances[I.itineraire[i]][I.itineraire[j]];
     }
     return dist;
 }
@@ -164,6 +166,7 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
     Population P;
     P.initialiser(taille_population,nombre_villes);
     P.evaluer(matrice_des_distances);
+    P.majorant().afficher();
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P);
@@ -182,11 +185,13 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
         while(j < enfants.composition.size() * frequence_mutation){
             int index = rand() % enfants.composition.size();
             enfants.composition[index] = mutation(enfants.composition[index]);
+            j++;
         }
 
         P=selection_population_finale(parents,enfants);
         P.evaluer(matrice_des_distances);
         P.majorant().afficher();
+        i++;
     }
 // Critère d'arrêt : après 10 générations, pas d'évolution du coût
 // Pas encore implanté

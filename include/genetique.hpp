@@ -65,6 +65,7 @@ class Population{
             auto it = (*this).composition.begin();
             while(it != (*this).composition.end()){
                 (*it).evaluer(matrice_des_distances);
+                it++;
             }
         }
 
@@ -95,7 +96,7 @@ class Population{
 
 };
 
-double distance_parcours(Individu, vector<vector<double>>&);
+double distance_parcours(Individu, const vector<vector<double>>&);
 
 pair<Individu, Individu> hybridation(const Individu&, const Individu&);
 
@@ -107,6 +108,6 @@ Population selection_reproducteurs(const Population&, enum modes_selection_repro
 enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
 Population selection_population_finale(const Population&, const Population&, enum modes_selection_pop_finale, int); 
 
-void algorithme_genetique(int, int, int,vector<vector<double>>, int);
+void algorithme_genetique(int, int, int,vector<vector<double>>, double);
 
 #endif
