@@ -8,13 +8,16 @@ using namespace std;
 // Algorithme brute force pour le problème du voyageur de commerce
 void tspBrut(vector<vector<double>>& distances) {
     int n = distances.size();
-    vector<int> villes(n);
+    vector<int> villes_itineraire(n);
+    Individu villes(villes_itineraire);
+
     for (int i = 0; i < n; ++i) {
-        villes[i] = i;
+        villes.itineraire[i] = i;
     }
 
     double minCout = numeric_limits<double>::infinity();
-    vector<int> meilleurChemin;
+    vector<int> meilleurChemin_itineraire;
+    Individu meilleurChemin(meilleurChemin_itineraire);
 
     // Essayer toutes les permutations des villes
     do {
@@ -23,12 +26,12 @@ void tspBrut(vector<vector<double>>& distances) {
             minCout = coutActuel;
             meilleurChemin = villes;
         }
-    } while (next_permutation(villes.begin() + 1, villes.end())); // On ne permute pas la première ville
+    } while (next_permutation(villes.itineraire.begin() + 1, villes.itineraire.end())); // On ne permute pas la première ville
 
     // Afficher le résultat
     cout << "Chemin optimal: ";
-    for (int i = 0; i < meilleurChemin.size(); ++i) {
-        cout << meilleurChemin[i] << " ";
+    for (int i = 0; i < meilleurChemin.itineraire.size(); ++i) {
+        cout << meilleurChemin.itineraire[i] << " ";
     }
     cout << endl;
     cout << "Coût total: " << minCout << endl;
