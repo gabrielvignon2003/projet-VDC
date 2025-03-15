@@ -1,0 +1,7 @@
+ville x y
+ville0 -15.21 8.4
+ville1 -58.88 86.68
+ville2 55.8 21.35
+ville3 70.82 24.12
+ville4 -29.35 76.57
+ville5 99.33 -3.47

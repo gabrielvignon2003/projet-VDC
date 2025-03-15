@@ -207,7 +207,7 @@ Population selection_reproducteurs(const Population& adultes, enum modes_selecti
 
 //sélection des composition qui vont survivre 
 
-Population selection_population_finale(const Population& parents, const Population& enfants, enum modes_selection_pop_finale mode_choisi = ENFANTS_PRIORITAIRES, int nombre_parents_survivants=0){
+Population selection_population_finale(const Population& parents, const Population& enfants, int nombre_parents_survivants, enum modes_selection_pop_finale mode_choisi = ELITISME){
     Population nouvelle_generation;
     Population parents_classee=parents;
     parents_classee.trier();
@@ -236,7 +236,7 @@ Population selection_population_finale(const Population& parents, const Populati
 
 
 // Génération d'une matrice des distances à partir d'un input à faire
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, double frequence_mutation=0.1){
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, double frequence_mutation, int nombre_parents_survivants){
     if (matrice_des_distances.size() != nombre_villes) {
         cerr << "ERREUR: Taille de la matrice (" << matrice_des_distances.size() 
              << ") ne correspond pas au nombre de villes (" << nombre_villes << ")" << endl;
@@ -257,7 +257,7 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P,ROULETTE);
-        cout<<i<<endl;
+        //cout<<i<<endl;
         
         Population enfants;
         while (enfants.composition.size() < taille_population) {
@@ -275,14 +275,12 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
             j++;
         }
 
-        P=selection_population_finale(parents,enfants);
+        P=selection_population_finale(parents,enfants, nombre_parents_survivants);
         P.evaluer(matrice_des_distances);
-        P.majorant().afficher();
         i++;
     }
+    P.majorant().afficher();
 // Critère d'arrêt : après 10 générations, pas d'évolution du coût
 // Pas encore implanté
-
-// traitement input
 
 }

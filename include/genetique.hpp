@@ -108,6 +108,6 @@ Population selection_reproducteurs(const Population&, enum modes_selection_repro
 enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
 Population selection_population_finale(const Population&, const Population&, enum modes_selection_pop_finale, int); 
 
-void algorithme_genetique(int, int, int,vector<vector<double>>, double);
+void algorithme_genetique(int, int, int,vector<vector<double>>, double, int);
 
 #endif

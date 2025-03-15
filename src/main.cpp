@@ -1,6 +1,7 @@
 #include <iostream>
 #include "traitement_input.hpp"
-//#include "brut.hpp"
+#include <string>
+#include "brut.hpp"
 #include "genetique.hpp"
 //#include "affichage.hpp"
 
@@ -16,15 +17,26 @@ bool valider_matrice_distances(const vector<vector<double>>& matrice) {
     return true;
 }
 
-int main()
-{
-    std::cout << "Hello world!" << std::endl;
-    vector<vector<double>> adj = input_coordonnees("./src/input.txt");
+int main(){
+    string input="./src/input2.txt";
+    int taille_population = 500;
+    int max_generation = 3000;
+    int nombre_villes= 6;
+    double frequence_mutation = 0.03;
+    int nombre_parents_survivants=250;
+
+    cout << "Hello world!" << endl;
+    vector<vector<double>> adj = input_coordonnees(input);
     cout<<"Chargement de la matrice des distances : OK"<<endl;
     if (!valider_matrice_distances(adj)) {
         cerr << "Matrice des distances corrompue !" << endl;
         return 1;
     }
-    algorithme_genetique(20,30,94,adj,0.1);
+    cout << "FORCE BRUTE" <<endl;
+    tspBrut(adj);
+
+    cout <<"GENETIQUE" <<endl;
+    algorithme_genetique(max_generation, taille_population, nombre_villes, adj, frequence_mutation, nombre_parents_survivants);
+
     return 0;
 }

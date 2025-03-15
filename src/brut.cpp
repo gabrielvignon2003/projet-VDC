@@ -35,6 +35,8 @@ void tspBrut(vector<vector<double>>& distances) {
     }
     cout << endl;
     cout << "Coût total: " << minCout << endl;
+    meilleurChemin.evaluer(distances);
+    cout << "Adaptation : " << meilleurChemin.adaptation << endl;
 }
 
 /*

@@ -4,6 +4,6 @@
 #include <vector>
 using namespace std;
 
-void tspBrut(const vector<vector<double>>&);
+void tspBrut(vector<vector<double>>&);
 
 #endif 
