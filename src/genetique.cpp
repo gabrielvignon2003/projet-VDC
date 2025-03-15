@@ -1,57 +1,25 @@
-#include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <vector>
 #include <utility>
-#include <random>
-#include <algorithm>
-
+#include "../include/genetique.hpp"
 using namespace std;
+
 
 /*
 HYPOTHESES DU MODELE : 
 - Seules figurent dans le modèle les villes par lesquelles on doit passer (pas de villes de passage
 non obligatoires)
 
-
-- Chaque ville ne doit être visitée qu'une fois (sauf le départ auquel il faut revenir)
---> Il faudra essayer d'enlever cette hypothèse pour gérer les graphes étoilés
-
 - Graphe complet, chaque ville est reliée à toutes les autres)
 --> Pour se dégager facilement de cette hypothèse, mettre des distances très grandes pour les 
 villes non connectées semble pertinent.
+
+- Chaque ville ne doit être visitée qu'une fois (sauf le départ auquel il faut revenir)
+--> Il faudra essayer d'enlever cette hypothèse pour gérer les graphes étoilés
 */
 
-
-//Individu = itinéraire
-class Individu{
-    public:
-        vector<int> itineraire; //itinéraire effectif
-        double adaptation; //adaptation = inverse de la distance de l'itinéraire
-
-        //constructeur paramétrique
-        Individu(vector<int> itineraire_,double adaptation_=0):
-        itineraire(itineraire_),adaptation(adaptation_){};
-
-        //constructeur par copie
-        Individu(const Individu& autre):
-        itineraire(autre.itineraire),adaptation(autre.adaptation){};
-
-        void evaluer(vector<vector<double>>&);
-
-        //affichage de l'itinéraire
-        void afficher(){
-            auto it=(*this).itineraire.begin();
-            while(it !=(*this).itineraire.end()){
-                cout << *it << "-->";
-                it++;
-            }
-            cout << endl << (*this).adaptation << endl;
-        }
-};
-
 //Distance d'un itinéraire/parcours 
-double distance_parcours(Individu I,vector<vector<double>>& matrice_des_distances){
+double distance_parcours(Individu I, const vector<vector<double>>& matrice_des_distances){
     double dist = 0.;
     int n = I.itineraire.size();
     for(int i = 0; i < n-1;i++ ){
@@ -61,64 +29,9 @@ double distance_parcours(Individu I,vector<vector<double>>& matrice_des_distance
 }
 
 //Evaluation de l'itinéraire
-void Individu::evaluer(vector<vector<double>>& matrice_des_distances){
+void Individu::evaluer( vector<vector<double>>& matrice_des_distances){
     (*this).adaptation = 1./distance_parcours(*this, matrice_des_distances);
 }
-
-
-
-// Population = ensemble d'itinéraires
-class Population{
-    public:
-        vector<Individu> composition;
-        double somme_adaptations; 
-
-        void initialiser(int taille_population, int nombre_villes){
-            composition.clear();
-            // On crée un vecteur contenant toutes les villes par lesquelles on doit passer 
-            vector<int> annuaire_villes;
-            int i=0;
-            while(i<nombre_villes){
-                annuaire_villes.push_back(i);
-                i++;
-            }
-            int j=0;
-            while(j<taille_population){
-                //On mélange notre annuaire aléatoirement
-                random_shuffle(annuaire_villes.begin(),annuaire_villes.end());
-                //On ajoute cette permutation aléatoire à la population
-                composition.push_back(Individu(annuaire_villes));
-                j++;
-            }
-        }
-
-        void evaluer(vector<vector<double>>& matrice_des_distances){
-            auto it = (*this).composition.begin();
-            while(it != (*this).composition.end()){
-                (*it).evaluer(matrice_des_distances);
-            }
-        }
-
-        void afficher(){
-            auto it = (*this).composition.begin();
-            while(it != (*this).composition.end()){
-                (*it).afficher();
-            }
-        }
-
-        // trier en fonction de l'adaptation (tri décroissant)
-
-        static bool comparateur_selon_adaptation(Individu a, Individu b){
-            return a.adaptation>b.adaptation;
-        }
-
-        void trier(){
-            sort((*this).composition.begin(),(*this).composition.end(),comparateur_selon_adaptation);
-        }
-        
-
-
-};
 
 
 // Les opérateurs génétiques doivent proposer des chemins valides
@@ -185,7 +98,7 @@ Individu mutation(Individu parent) {
 }
 
 // sélection des reproducteurs
-enum modes_selection_reproducteurs {ROULETTE, RANG, TOURNOI, EUGENISME};
+
 Population selection_reproducteurs(const Population& adultes, enum modes_selection_reproducteurs mode_choisi = ROULETTE){
     Population reproducteurs;
     if(mode_choisi == ROULETTE){
@@ -215,7 +128,7 @@ Population selection_reproducteurs(const Population& adultes, enum modes_selecti
 }
 
 //sélection des composition qui vont survivre 
-enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
+
 Population selection_population_finale(const Population& parents, const Population& enfants, enum modes_selection_pop_finale mode_choisi = ENFANTS_PRIORITAIRES, int nombre_parents_survivants=0){
     Population nouvelle_generation;
     Population parents_classee=parents;
@@ -245,7 +158,7 @@ Population selection_population_finale(const Population& parents, const Populati
 
 
 // Génération d'une matrice des distances à partir d'un input à faire
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, int frequence_mutation=0.1){
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, double frequence_mutation=0.1){
     Population P;
     P.initialiser(taille_population,nombre_villes);
     P.evaluer(matrice_des_distances);
@@ -271,12 +184,11 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
 
         P=selection_population_finale(parents,enfants);
         P.evaluer(matrice_des_distances);
+        P.majorant().afficher();
     }
 // Critère d'arrêt : après 10 générations, pas d'évolution du coût
+// Pas encore implanté
+
+// traitement input
 
 }
-/*
-int main(){
-    return 0;
-}
- */

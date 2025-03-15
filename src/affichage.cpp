@@ -3,12 +3,9 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+#include "../include/affichage.hpp"
 
-// Structure pour une ville
-struct Ville {
-    float x, y;
-    std::string nom;
-};
+
 
 // Fonction pour dessiner une ligne avec une flèche au milieu
 void drawLineWithArrow(sf::RenderWindow& window, sf::Vector2f start, sf::Vector2f end) {
