@@ -85,6 +85,9 @@ pair<Individu, Individu> hybridation(const Individu& maman, const Individu& papa
     int size = maman.itineraire.size();
     vector<int> enfant1(size, -1), enfant2(size, -1);
 
+    enfant1[0]=0;
+    enfant2[0]=0;
+
     // Génération aléatoire de debut et fin AVANT la lambda
     random_device rd;
     mt19937 gen(rd());
@@ -97,10 +100,12 @@ pair<Individu, Individu> hybridation(const Individu& maman, const Individu& papa
     auto remplir_enfant = [debut, fin, size](const Individu& parent, vector<int>& enfant) {
         int index = (fin + 1) % size;
         for (int ville : parent.itineraire) {
+            if (index == 0) index = 1; // Sauter l'indice 0
             if (find(enfant.begin(), enfant.end(), ville) == enfant.end()) {
                 enfant[index] = ville;
                 index = (index + 1) % size;
                 if (index == debut) index = (fin + 1) % size;
+                if (index == 0) index = 1; // Sauter l'indice 0
             }
         }
     };
@@ -123,7 +128,7 @@ Individu mutation(Individu parent) {
     static mt19937 gen(rd());
 
     int size = parent.itineraire.size();
-    uniform_int_distribution<int> dist(1, size - 2); // Éviter les extrémités
+    uniform_int_distribution<int> dist(1, size - 1); // Éviter les extrémités
 
     int k = dist(gen);
     int l = dist(gen);
@@ -253,7 +258,7 @@ void algorithme_genetique(int max_generation, int taille_population, int nombre_
     Population P;
     P.initialiser(taille_population,nombre_villes);
     P.evaluer(matrice_des_distances);
-    P.majorant().afficher();
+    //P.majorant().afficher();
     int i = 0;
     while(i<max_generation){
         Population parents = selection_reproducteurs(P,ROULETTE);

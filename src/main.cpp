@@ -17,6 +17,9 @@ bool valider_matrice_distances(const vector<vector<double>>& matrice) {
     return true;
 }
 
+//input.txt : 94 villes
+//input2.txt : 6 villes, bien pour comparaison avec la force brute
+
 int main(){
     string input="./src/input2.txt";
     int taille_population = 500;
@@ -37,6 +40,5 @@ int main(){
 
     cout <<"GENETIQUE" <<endl;
     algorithme_genetique(max_generation, taille_population, nombre_villes, adj, frequence_mutation, nombre_parents_survivants);
-
     return 0;
 }
