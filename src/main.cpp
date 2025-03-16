@@ -19,12 +19,13 @@ bool valider_matrice_distances(const vector<vector<double>>& matrice) {
 
 //input.txt : 94 villes
 //input2.txt : 6 villes, bien pour comparaison avec la force brute
+//input3.txt : 11 villes
 
 int main(){
-    string input="./src/input2.txt";
+    string input="./src/input3.txt";
     int taille_population = 500;
     int max_generation = 3000;
-    int nombre_villes= 6;
+    int nombre_villes= 11;
     double frequence_mutation = 0.03;
     int nombre_parents_survivants=250;
 
