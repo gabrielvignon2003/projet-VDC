@@ -44,36 +44,40 @@ class Population{
     public:
         vector<Individu> composition;
 
-        // Initialisation de la population avec des individus commençant tous par la ville 0
-
-    void initialiser(int taille_population, int nombre_villes){
-        composition.clear();
-        // On crée un vecteur contenant toutes les villes par lesquelles on doit passer 
-        // Sauf la ville 0 qui sera fixée au début
-        vector<int> annuaire_villes;
-        for(int i = 1; i < nombre_villes; i++){
-            annuaire_villes.push_back(i);
-        }
-        
-        int j = 0;
-        while(j < taille_population){
-            // On crée un nouvel itinéraire qui commence toujours par la ville 0
-            vector<int> route;
-            route.push_back(0); // Toujours commencer par la ville 0
+        // Initialisation de la population avec des individus commençant tous par la ville 0   
+        void initialiser(int taille_population, int nombre_villes) {
+            composition.clear();
             
-            // On mélange notre annuaire aléatoirement (seulement les villes de 1 à n-1)
-            random_shuffle(annuaire_villes.begin(), annuaire_villes.end());
-            
-            // On ajoute les villes mélangées après la ville 0
-            for(int ville : annuaire_villes){
-                route.push_back(ville);
+            if (nombre_villes == 1) { 
+                // Cas particulier où il n'y a qu'une seule ville (juste {0})
+                for (int j = 0; j < taille_population; j++) {
+                    composition.push_back(Individu({0}));  
+                }
+                return;  
             }
+
+            vector<int> annuaire_villes;
+            annuaire_villes.reserve(nombre_villes - 1);
             
-            // On ajoute cette permutation aléatoire à la population
-            composition.push_back(Individu(route));
-            j++;
+            for (int i = 1; i < nombre_villes; i++) {
+                annuaire_villes.push_back(i);
+            }
+
+            random_device rd;
+            mt19937 gen(rd()); // Générateur aléatoire
+
+            for (int j = 0; j < taille_population; j++) {
+                vector<int> route;
+                route.reserve(nombre_villes);
+                route.push_back(0); // Toujours commencer par la ville 0
+
+                shuffle(annuaire_villes.begin(), annuaire_villes.end(), gen); // Mélange sécurisé
+
+                route.insert(route.end(), annuaire_villes.begin(), annuaire_villes.end());
+
+                composition.push_back(Individu(route));
+            }
         }
-    }
 
         
         //Fonction qui met à jour tous les attributs adaptation des individus de la population
@@ -124,6 +128,6 @@ Population selection_reproducteurs(const Population&, enum modes_selection_repro
 enum modes_selection_pop_finale{ENFANTS_PRIORITAIRES, ELITISME};
 Population selection_population_finale(const Population&, const Population&, enum modes_selection_pop_finale, int); 
 
-void algorithme_genetique(int, int, int,vector<vector<double>>, double, int);
+void algorithme_genetique(int, int, int,vector<vector<double>>, double, int, int);
 
 #endif

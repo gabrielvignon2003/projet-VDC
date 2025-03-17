@@ -18,27 +18,33 @@ villes non connectées semble pertinent.
 --> Il faudra essayer d'enlever cette hypothèse pour gérer les graphes étoilés
 */
 
-//Distance d'un itinéraire/parcours 
-double distance_parcours(Individu I, const vector<vector<double>>& matrice_des_distances){
+// Distance d'un itinéraire/parcours 
+double distance_parcours(Individu I, const vector<vector<double>>& matrice_des_distances) {
+    if (I.itineraire.size() <= 1) return 0.0;  // ✅ Cas d'une seule ville
     double dist = 0.;
     int n = I.itineraire.size();
-    for(int i = 0; i < n-1;i++ ){
-        // Le %n permet de boucler et de revenir à la ville de départ
-        int j=(i+1)%n;
+    for (int i = 0; i < n - 1; i++) {
+        int j = (i + 1) % n;
         dist += matrice_des_distances[I.itineraire[i]][I.itineraire[j]];
     }
     return dist;
 }
 
-//Evaluation de l'itinéraire
+// Evaluation de l'itinéraire
 void Individu::evaluer(vector<vector<double>>& matrice_des_distances) {
+    if (itineraire.size() == 1) {
+        adaptation = 1.0;  // ✅ Cas où il n'y a qu'une seule ville → meilleure adaptation possible
+        return;
+    }
+
     double dist = distance_parcours(*this, matrice_des_distances);
-    if (dist <= 0.0000001) { // Utiliser une tolérance pour éviter les valeurs très proches de zéro
-        adaptation = 0.0;    // Attribuer une adaptation nulle à un chemin invalide
+    if (dist <= 1e-7) {
+        adaptation = 0.0;
     } else {
         adaptation = 1.0 / dist;
     }
 }
+
 // Les opérateurs génétiques doivent proposer des chemins valides
 // Donc chaque ville ne doit apparaître qu'une fois
 
@@ -240,52 +246,65 @@ Population selection_population_finale(const Population& parents, const Populati
 }
 
 
-// Génération d'une matrice des distances à partir d'un input à faire
-void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,  vector<vector<double>> matrice_des_distances, double frequence_mutation, int nombre_parents_survivants){
-    if (matrice_des_distances.size() != nombre_villes) {
-        cerr << "ERREUR: Taille de la matrice (" << matrice_des_distances.size() 
-             << ") ne correspond pas au nombre de villes (" << nombre_villes << ")" << endl;
-        return;
-    }
-    
-    for (int i = 0; i < matrice_des_distances.size(); i++) {
-        if (matrice_des_distances[i].size() != nombre_villes) {
-            cerr << "ERREUR: Ligne " << i << " de la matrice a une taille incorrecte" << endl;
-            return;
-        }
-    }
-    
-    Population P;
-    P.initialiser(taille_population,nombre_villes);
-    P.evaluer(matrice_des_distances);
-    //P.majorant().afficher();
-    int i = 0;
-    while(i<max_generation){
-        Population parents = selection_reproducteurs(P,ROULETTE);
-        //cout<<i<<endl;
-        
-        Population enfants;
-        while (enfants.composition.size() < taille_population) {
-            Individu maman = parents.composition[rand() % parents.composition.size()];
-            Individu papa = parents.composition[rand() % parents.composition.size()];
-            auto [enfant1, enfant2] = hybridation(maman, papa);
-            enfants.composition.push_back(enfant1);
-            enfants.composition.push_back(enfant2);
-        }
+// Algorithme génétique principal
+void algorithme_genetique(int max_generation, int taille_population, int nombre_villes,
+    vector<vector<double>> matrice_des_distances, double frequence_mutation,
+    int nombre_parents_survivants, int max_stagnation_generations) {
 
-        int j=0;
-        while(j < enfants.composition.size() * frequence_mutation){
-            int index = rand() % enfants.composition.size();
-            enfants.composition[index] = mutation(enfants.composition[index]);
-            j++;
-        }
+if (nombre_villes == 1) {  // ✅ Cas où il n'y a qu'une seule ville → solution unique
+cout << "Solution optimale trouvée immédiatement : [0]" << endl;
+cout << "Coût total : 0" << endl;
+return;
+}
 
-        P=selection_population_finale(parents,enfants, nombre_parents_survivants);
-        P.evaluer(matrice_des_distances);
-        i++;
-    }
-    P.majorant().afficher();
-// Critère d'arrêt : après 10 générations, pas d'évolution du coût
-// Pas encore implanté
+Population P;
+P.initialiser(taille_population, nombre_villes);
+P.evaluer(matrice_des_distances);
 
+double previousBestFitness = P.majorant().adaptation;
+int stagnationCount = 0;
+int i = 0;
+
+while (i < max_generation) {
+cout << "Générations " << i << " :" << distance_parcours(P.majorant(),matrice_des_distances) << endl;
+Population parents = selection_reproducteurs(P, ROULETTE);
+Population enfants;
+
+while (enfants.composition.size() < taille_population) {
+Individu maman = parents.composition[rand() % parents.composition.size()];
+Individu papa = parents.composition[rand() % parents.composition.size()];
+auto [enfant1, enfant2] = hybridation(maman, papa);
+enfants.composition.push_back(enfant1);
+enfants.composition.push_back(enfant2);
+}
+
+int j = 0;
+while (j < enfants.composition.size() * frequence_mutation) {
+int index = rand() % enfants.composition.size();
+enfants.composition[index] = mutation(enfants.composition[index]);
+j++;
+}
+
+P = selection_population_finale(parents, enfants, nombre_parents_survivants);
+P.evaluer(matrice_des_distances);
+
+double currentBestFitness = P.majorant().adaptation;
+if (abs(currentBestFitness - previousBestFitness) <= 1e-6) {
+stagnationCount++;
+} else {
+stagnationCount = 0;
+}
+
+if (stagnationCount >= max_stagnation_generations) {
+cout << "Critère d'arrêt atteint : stagnation du fitness après " << stagnationCount << " générations." << endl;
+break;
+}
+
+previousBestFitness = currentBestFitness;
+i++;
+}
+
+P.majorant().afficher();
+cout << "Coût total : " << distance_parcours(P.majorant(), matrice_des_distances) << endl;
+cout << "Solution trouvée en " << i << " générations" << endl;
 }
